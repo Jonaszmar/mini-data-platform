@@ -2,7 +2,8 @@ import os
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, from_json, current_timestamp, lit
 from pyspark.sql.types import StructType, StructField, StringType, MapType
-from delta import configure_spark_with_delta_pip
+from delta.pip_utils import configure_spark_with_delta_pip
+
 
 kafka_bootstrap = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:29092")
 s3_endpoint = os.getenv("S3_ENDPOINT", "http://minio:9000")
