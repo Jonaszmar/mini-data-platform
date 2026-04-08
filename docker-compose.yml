@@ -1,5 +1,6 @@
 services:
   zookeeper:
+    container_name: zookeeper
     image: confluentinc/cp-zookeeper:7.6.1
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
@@ -11,6 +12,7 @@ services:
       - data-platform
 
   kafka:
+    container_name: kafka
     image: confluentinc/cp-kafka:7.6.1
     depends_on:
       - zookeeper
@@ -34,6 +36,7 @@ services:
       - data-platform
 
   schema-registry:
+    container_name: schema-registry
     image: confluentinc/cp-schema-registry:7.6.1
     depends_on:
       - kafka
@@ -48,14 +51,15 @@ services:
       - data-platform
 
   postgres:
+    container_name: postgres
     build:
       context: ./postgres
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: business_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     command:
       - postgres
       - -c
@@ -72,6 +76,7 @@ services:
       - data-platform
 
   kafka-connect:
+    container_name: kafka-connect
     image: debezium/connect:2.5
     depends_on:
       - kafka
@@ -99,11 +104,12 @@ services:
       - data-platform
 
   minio:
+    container_name: minio
     image: minio/minio:RELEASE.2025-02-28T09-55-16Z
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -120,7 +126,7 @@ services:
     entrypoint: >
       /bin/sh -c "
       sleep 10;
-      mc alias set local http://minio:9000 minioadmin minioadmin;
+      mc alias set local http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
       mc mb -p local/datalake || true;
       exit 0;
       "
@@ -128,22 +134,24 @@ services:
       - data-platform
 
   producer-app:
+    container_name: producer-app
     build:
       context: ./app
     depends_on:
       - postgres
     environment:
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: business_db
-      DB_USER: postgres
-      DB_PASSWORD: postgres
-      INSERT_INTERVAL_SEC: 2
+      DB_HOST: ${APP_DB_HOST}
+      DB_PORT: ${APP_DB_PORT}
+      DB_NAME: ${APP_DB_NAME}
+      DB_USER: ${APP_DB_USER}
+      DB_PASSWORD: ${APP_DB_PASSWORD}
+      INSERT_INTERVAL_SEC: ${INSERT_INTERVAL_SEC}
     restart: unless-stopped
     networks:
       - data-platform
 
   kafka-consumer:
+    container_name: kafka-consumer
     build:
       context: ./consumer
     depends_on:
@@ -157,15 +165,16 @@ services:
       - data-platform
 
   spark:
+    container_name: spark
     build:
       context: ./spark
     depends_on:
       - kafka
       - minio
     environment:
-      HOME: /tmp
-      AWS_ACCESS_KEY_ID: minioadmin
-      AWS_SECRET_ACCESS_KEY: minioadmin
+      HOME: ${SPARK_HOME_TMP}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       S3_ENDPOINT: http://minio:9000
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     ports:
@@ -175,9 +184,9 @@ services:
       - --master
       - local[*]
       - --conf
-      - spark.driver.extraJavaOptions=-Divy.home=/tmp/.ivy2
+      - spark.driver.extraJavaOptions=-Divy.home=${SPARK_HOME_TMP}/.ivy2
       - --conf
-      - spark.executor.extraJavaOptions=-Divy.home=/tmp/.ivy2
+      - spark.executor.extraJavaOptions=-Divy.home=${SPARK_HOME_TMP}/.ivy2
       - --packages
       - org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1,io.delta:delta-spark_2.12:3.2.0,org.apache.hadoop:hadoop-aws:3.3.4
       - /opt/spark/app/stream_to_deltalake.py
