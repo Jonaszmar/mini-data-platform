@@ -13,10 +13,10 @@ fake = Faker()
 
 DB_CONFIG = {
     "host": os.getenv("DB_HOST", "localhost"),
-    "port": int(os.getenv("DB_PORT", "5432")),
-    "dbname": os.getenv("DB_NAME", "business_db"),
-    "user": os.getenv("DB_USER", "postgres"),
-    "password": os.getenv("DB_PASSWORD", "postgres"),
+    "port": int(os.getenv("APP_DB_PORT")),
+    "dbname": os.getenv("APP_DB_NAME"),
+    "user": os.getenv("APP_DB_USER"),
+    "password": os.getenv("APP_DB_PASSWORD"),
 }
 
 INSERT_INTERVAL_SEC = int(os.getenv("INSERT_INTERVAL_SEC", "2"))

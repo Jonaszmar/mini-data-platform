@@ -7,8 +7,8 @@ from delta.pip_utils import configure_spark_with_delta_pip
 
 kafka_bootstrap = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:29092")
 s3_endpoint = os.getenv("S3_ENDPOINT", "http://minio:9000")
-aws_access_key = os.getenv("AWS_ACCESS_KEY_ID", "minioadmin")
-aws_secret_key = os.getenv("AWS_SECRET_ACCESS_KEY", "minioadmin")
+aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
+aws_secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
 
 builder = (
     SparkSession.builder
