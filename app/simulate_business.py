@@ -4,19 +4,20 @@ import string
 import time
 from datetime import datetime, timedelta
 from decimal import Decimal
-
+from dotenv import load_dotenv
 import psycopg2
 from faker import Faker
 from psycopg2.extras import execute_values
 
 fake = Faker()
+load_dotenv()
 
 DB_CONFIG = {
     "host": os.getenv("DB_HOST", "localhost"),
-    "port": int(os.getenv("APP_DB_PORT")),
-    "dbname": os.getenv("APP_DB_NAME"),
-    "user": os.getenv("APP_DB_USER"),
-    "password": os.getenv("APP_DB_PASSWORD"),
+    "port": int(os.getenv("DB_PORT")),
+    "dbname": os.getenv("DB_NAME"),
+    "user": os.getenv("DB_USER"),
+    "password": os.getenv("DB_PASSWORD"),
 }
 
 INSERT_INTERVAL_SEC = int(os.getenv("INSERT_INTERVAL_SEC", "2"))
